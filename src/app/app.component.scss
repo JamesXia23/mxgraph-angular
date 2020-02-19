@@ -1,0 +1,44 @@
+.app-container {
+  .app-layout {
+    padding:24px 0;
+    background: #fff;
+    .app-sider {
+      background: #fff;
+      .elements {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        .element {
+          width: 100px;
+          text-align: center;
+          margin-bottom: 10px;
+          > img {
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            height: 100px;
+          }
+          > p {
+            color: #333;
+            margin-top: 8px;
+          }
+        }
+      }
+    }
+    .app-content {
+      padding: 0 24px;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 90vh;
+      background: #eee url('../assets/images/grid.gif') 0 0 repeat;
+      border-radius: 4px;
+      margin-right: 10px;
+      > #graphContainer {
+        height: 100%;
+      }
+    }
+  }
+}

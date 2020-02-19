@@ -1,3 +1,29 @@
 <div class="app-container">
-  <div #dashboard></div>
+  <nz-layout class="app-layout">
+    <nz-sider class="app-sider" [nzWidth]="320">
+      <nz-row>
+        <nz-col nzSpan="12"
+                *ngFor="let element of elements; let key=index">
+          <nz-card nzHoverable
+                   style="width:150px;"
+                   [nzCover]="coverTemplate">
+            <nz-card-meta
+              [nzTitle]="element.title">
+            </nz-card-meta>
+          </nz-card>
+          <ng-template #coverTemplate>
+            <img class="element-img"
+                 width="150px"
+                 height="150px"
+                 [src]="'src/assets/images/ele/' + element.icon"
+                 [alt]="element.title">
+          </ng-template>
+        </nz-col>
+      </nz-row>
+    </nz-sider>
+    <nz-content class="app-content">
+      <div id="graphContainer" #graphContainer>
+      </div>
+    </nz-content>
+  </nz-layout>
 </div>
