@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {mxgraph} from 'ts-mxgraph-typings';
 import {Graph} from './model/graph';
-import {NzMessageService} from 'ng-zorro-antd';
+import {NzMessageService, UploadChangeParam} from 'ng-zorro-antd';
 import {mx} from './model/mx';
 import FileSaver from 'file-saver';
 
@@ -312,6 +312,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // 导出、导入功能参考这个例子
+  // https://github.com/jgraph/mxgraph/blob/master/javascript/examples/fileio.html
   /**
    * 导出
    */
@@ -319,5 +321,26 @@ export class AppComponent implements OnInit, AfterViewInit {
     const xml = this.graph.exportModelXML();
     const blob = new Blob([xml], { type: 'text/plain;charset=utf-8' });
     FileSaver.saveAs(blob, 'pocket_monster.xml');
+  }
+
+  /**
+   * 点击导入文件框
+   */
+  importFile(importInput: HTMLInputElement) {
+    importInput.click();
+  }
+
+  /**
+   * 读取文件
+   * @param event
+   */
+  readFile(event: Event) {
+    const file = event.target['files'][0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const txt = e.target['result'];
+      this.graph.importModelXML(txt);
+    };
+    reader.readAsText(file);
   }
 }
