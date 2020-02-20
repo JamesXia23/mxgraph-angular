@@ -25,7 +25,7 @@
     <nz-content class="app-content">
       <div class="tool-bar">
         <button nz-button>导入</button>
-        <button nz-button>导出</button>
+        <button nz-button (click)="exportFile()">导出</button>
         <button nz-button>输出XML</button>
         <button nz-button
                 (click)="delete()"

@@ -3,6 +3,7 @@ import {mxgraph} from 'ts-mxgraph-typings';
 import {Graph} from './model/graph';
 import {NzMessageService} from 'ng-zorro-antd';
 import {mx} from './model/mx';
+import FileSaver from 'file-saver';
 
 Object.assign(mx.mxEvent, {
   NORMAL_TYPE_CLICKED: 'NORMAL_TYPE_CLICKED',
@@ -309,5 +310,14 @@ export class AppComponent implements OnInit, AfterViewInit {
     } else {
       this.graph.removeCells([this.selectEdge]);
     }
+  }
+
+  /**
+   * 导出
+   */
+  exportFile() {
+    const xml = this.graph.exportModelXML();
+    const blob = new Blob([xml], { type: 'text/plain;charset=utf-8' });
+    FileSaver.saveAs(blob, 'pocket_monster.xml');
   }
 }
