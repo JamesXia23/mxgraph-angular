@@ -15,6 +15,7 @@
             <img class="element-img"
                  width="150px"
                  height="150px"
+                 [id]="key+1"
                  [src]="'src/assets/images/ele/' + element.icon"
                  [alt]="element.title">
           </ng-template>
@@ -24,6 +25,22 @@
     <nz-content class="app-content">
       <div id="graphContainer" #graphContainer>
       </div>
+      <nz-select *ngIf="normalTypeSelectVisible"
+                 [(ngModel)]="selectVertex['data']['normalType']"
+                 class="normal-type-select"
+                 (ngModelChange)="changeNormalType($event)"
+                 [ngStyle]="{
+                    top: normalTypePosition.top,
+                    left: normalTypePosition.left
+                 }">
+        <nz-option *ngFor="let item of normalTypeOptions" [nzLabel]="item.label" [nzValue]="item.icon">
+
+        </nz-option>
+      </nz-select>
     </nz-content>
   </nz-layout>
+  <div class="outline-wrapper">
+    <h4>导航器</h4>
+    <div id="graphOutline"></div>
+  </div>
 </div>

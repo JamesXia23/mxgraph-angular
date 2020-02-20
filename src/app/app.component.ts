@@ -1,13 +1,8 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {mxgraph} from 'ts-mxgraph-typings';
 import {Graph} from './model/graph';
-
-
-declare const require: any;
-
-const mx: typeof mxgraph = require('mxgraph')({
-  mxBasePath: 'assets/mxgraph'
-});
+import {NzMessageService} from 'ng-zorro-antd';
+import {mx} from './model/mx';
 
 Object.assign(mx.mxEvent, {
   NORMAL_TYPE_CLICKED: 'NORMAL_TYPE_CLICKED',
@@ -45,21 +40,39 @@ export class AppComponent implements OnInit, AfterViewInit {
     title: '妙蛙种子',
   }];
 
+  normalTypeOptions = [{
+    label: '电',
+    icon: 'thunder.png',
+  }, {
+    label: '火',
+    icon: 'fire.png',
+  }, {
+    label: '草',
+    icon: 'forest.png',
+  }, {
+    label: '水',
+    icon: 'water.png',
+  }];
+
+  normalTypeSelectVisible = false;
+  normalTypePosition = {
+    top: '0',
+    left: '0',
+  };
+
   @ViewChild('graphContainer')
   graphContainer: ElementRef;
 
-  graph: mxgraph.mxGraph;
+  graph: Graph;
   outline: mxgraph.mxOutline;
   idSeed = 0;
+  selectVertex: mxgraph.mxCell;
+  selectEdge: mxgraph.mxCell;
+
+  constructor(private message: NzMessageService) {
+  }
 
   ngOnInit(): void {
-
-    // this.graph = new mx.mxGraph(this.dashboard.nativeElement);
-    // const parent = this.graph.getDefaultParent();
-    //
-    // const v1 = this.graph.insertVertex(parent, null, 'hello, ', 20, 20, 80, 30);
-    // const v2 = this.graph.insertVertex(parent, null, 'world!', 200, 150, 80, 30);
-    // const e1 = this.graph.insertEdge(parent, null, 'test', v1, v2);
   }
 
 
@@ -74,6 +87,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setConnectValidation();
   }
 
+  /**
+   * 让图片可以被拖动，并且检测可否放置以及放置完增加一个组件
+   * @param sourceEles
+   */
   makeDraggable(sourceEles: HTMLCollectionOf<Element>) {
     const _ = this;
     const dropValidate = function (evt) {
@@ -95,7 +112,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     };
 
     Array.from(sourceEles).forEach((ele) => {
-      console.log(ele);
       const dragElt = document.createElement('img');
       dragElt.setAttribute('src', ele.getAttribute('src'));
       dragElt.setAttribute('style', 'width:120px;height:120px;');
@@ -105,6 +121,13 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * 插入一个节点
+   * @param dom
+   * @param target
+   * @param x
+   * @param y
+   */
   insertVertex(dom, target, x, y) {
     const src = dom.getAttribute('src');
     const id = Number(dom.getAttribute('id'));
@@ -115,7 +138,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     nodeRootVertex['data'] = {
       id: this.idSeed,
       element: this.elements.find((element) => element.id === id),
-      normalType: '',
+      normalType: 'forest.png',
     };
 
     const title = dom.getAttribute('alt');
@@ -137,7 +160,26 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * 添加事件
+   */
   listenGraphEvent() {
+    // 监听自定义事件
+    // 选择属性
+    this.graph.addListener(mx.mxEvent['NORMAL_TYPE_CLICKED'], (sender, evt) => {
+
+      const normalTypeDom = this.graph.getDom(evt.getProperty('cell'));
+      const normalTypePosition = normalTypeDom.getBoundingClientRect();
+      this.normalTypePosition.left = normalTypePosition.left - 210 + 80 + 'px';
+      this.normalTypePosition.top = normalTypePosition.top - 8 + 'px';
+      this.normalTypeSelectVisible = true;
+    });
+    this.graph.addListener(mx.mxEvent['VERTEX_START_MOVE'], () => {
+      this.normalTypeSelectVisible = false;
+    });
+
+    // 监听 mxGraph 事件
+    // 在画布上点击
     this.graph.addListener(mx.mxEvent.CLICK, (sender, evt) => {
       const cell = evt.properties.cell;
       if (!cell) {
@@ -150,8 +192,64 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.graph.fireEvent(new mx.mxEventObject(mx.mxEvent['NORMAL_TYPE_CLICKED'], 'cell', cell));
       }
     });
+
+    // 改变选择的model
+    const mxGraphSelectionModel = this.graph.getSelectionModel();
+    mxGraphSelectionModel.addListener(mx.mxEvent.CHANGE, (selectModel) => {
+      this.selectVertex = null;
+      this.selectEdge = null;
+      if (!selectModel.cells.length) {
+        return;
+      }
+
+      const cell = selectModel.cells[0];
+
+      // 另一种获取当前节点的方法
+      // const selectionCell = graph.getSelectionCell();
+      // console.log(selectionCell === cell); // true
+
+      if (cell.vertex) {
+        this.selectVertex = cell;
+      } else {
+        this.selectEdge = cell;
+      }
+    });
+
+    // 坐标提示
+    this.graph.addListener(mx.mxEvent.MOVE_CELLS, (sender, evt) => {
+      const cell = evt.properties.cells[0];
+      const position = Graph.getCellPosition(cell);
+      setTimeout(() => this.message.info('节点被移动到' + JSON.stringify(position)), 500);
+    });
+
+    // 增加cell
+    this.graph.addListener(mx.mxEvent.CELLS_ADDED, (sender, evt) => {
+      const cell = evt.properties.cells[0];
+      if (this.graph.isPart(cell)) {
+        return;
+      }
+
+      if (cell.vertex) {
+        this.message.info('添加了一个节点');
+      } else if (cell.edge) {
+        this.message.info('添加了一条线');
+      }
+    });
+
+    // 内容改变
+    this.graph.addListener(mx.mxEvent.LABEL_CHANGED, (sender, evt) => {
+      this.message.info('内容改变为：' + evt.getProperty('value'));
+    });
+
+    // 连线改变
+    this.graph.addListener(mx.mxEvent.CONNECT_CELL, (sender, evt) => {
+      this.message.info('改变了连线');
+    });
   }
 
+  /**
+   * 重载getCursorForCell，设置鼠标放置到属性选择上时显示小手
+   */
   setCursor() {
     const oldGetCursorForCell = mx.mxGraph.prototype.getCursorForCell;
     this.graph.getCursorForCell = function (...args) {
@@ -162,9 +260,15 @@ export class AppComponent implements OnInit, AfterViewInit {
     };
   }
 
+  /**
+   * 限制边的连接
+   */
   setConnectValidation() {
     // 连接边校验
     mx.mxGraph.prototype.isValidConnection = (source, target) => {
+      if (!source.data || !source.data.element || !target.data || !target.data.element) {
+        return true;
+      }
       const sourceElementId = source.data.element.id;
       const targetElementId = target.data.element.id;
       // 如果源点是智爷，终点必须是 皮卡丘 或 我是皮卡丘的超级超级进化
@@ -179,6 +283,17 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       return true;
     };
+  }
+
+  /**
+   * 改变属性
+   * @param val
+   */
+  changeNormalType(val: any) {
+    this.selectVertex['data']['normalType'] = val;
+    const normalTypeVertex = this.selectVertex.children[1];
+    this.graph.setStyle(normalTypeVertex, 'image', '/assets/images/normal-type/' + val);
+    this.normalTypeSelectVisible = false;
   }
 
   ngAfterViewInit(): void {

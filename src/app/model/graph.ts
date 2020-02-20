@@ -1,15 +1,9 @@
-import {mxgraph} from 'ts-mxgraph-typings';
 import _ from 'lodash';
-
-declare const require: any;
-
-const mx: typeof mxgraph = require('mxgraph')({
-  mxBasePath: 'assets/mxgraph'
-});
+import {mx} from './mx';
 
 Object.assign(mx.mxEvent, {
-  EDGE_START_MOVE: 'edgeStartMove',
-  VERTEX_START_MOVE: 'vertexStartMove',
+  EDGE_START_MOVE: 'EDGE_START_MOVE',
+  VERTEX_START_MOVE: 'VERTEX_START_MOVE',
 });
 
 export class Graph extends mx.mxGraph {
