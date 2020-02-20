@@ -36,6 +36,12 @@
       background: #eee url('../assets/images/grid.gif') 0 0 repeat;
       border-radius: 4px;
       margin-right: 10px;
+      .tool-bar {
+        background: #eee;
+        padding-left: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
       > #graphContainer {
         height: 100%;
       }

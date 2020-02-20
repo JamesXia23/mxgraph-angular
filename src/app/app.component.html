@@ -23,6 +23,17 @@
       </nz-row>
     </nz-sider>
     <nz-content class="app-content">
+      <div class="tool-bar">
+        <button nz-button>导入</button>
+        <button nz-button>导出</button>
+        <button nz-button>输出XML</button>
+        <button nz-button
+                (click)="delete()"
+                [disabled]="!selectVertex && !selectEdge">
+          删除
+        </button>
+        <button nz-button>导出图片</button>
+      </div>
       <div id="graphContainer" #graphContainer>
       </div>
       <nz-select *ngIf="normalTypeSelectVisible"

@@ -299,4 +299,15 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.initGraph();
   }
+
+  /**
+   * 删除节点或者边
+   */
+  delete() {
+    if (this.selectVertex) {
+      this.graph.deleteSubtree(this.selectVertex);
+    } else {
+      this.graph.removeCells([this.selectEdge]);
+    }
+  }
 }
